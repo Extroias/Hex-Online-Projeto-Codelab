@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0px;
+        }
+
+        #PlayBorder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 90%;
+            background: rgb(114, 114, 114);
+        }
+
+        #PlayArea {
+            width: 90%;
+            height: 90%;
+            background: rgb(235, 235, 235);
+        }
+
+        .tile {
+            stroke: black;
+            fill: rgb(188, 194, 196);
+            stroke-width: 4;
+        }
+        .button{
+            width: 10%;
+            height: 60%;
+            font-size: large;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; width: 100%; height: 10%; background: rgb(78, 78, 78);">
+        <H1 style="margin-left: 20px;">Hex Online</H1>
+        <H1 id="Winner" style="visibility: hidden;">White Wins</H1>
+        <button id="Restart" class="button">Restart</button>
+    </div>
+    <div id="PlayBorder">
+        <div id="PlayArea">
+            <svg height="100%" width="100%" id="Shapes" viewBox="0 -768 1024 768" preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg">
+            </svg>
+        </div>
+    </div>
+    <script>
+        let shapes = document.getElementById("Shapes");
+        const height = Math.sqrt(3) / 2;
+        const size = 35;
+        const sposx = 55;
+        const sposy = -120;
+        const Hex_Preto = "Hex_Preto.png";
+        const Hex_Branco = "Hex_Branco.png";
+
+        class Cell {
+            posx; posy;
+            element;
+            type = 0;
+            locked = false;
+            #image;
+
+            constructor(position, size) 
+            {
+                this.posx = position[0]; this.posy = position[1];
+
+                let hex = document.createElementNS('http://www.w3.org/2000/svg', "polygon");
+                let points = [[position[0], position[1] + size],
+                [position[0] + (size * height), position[1] + (size / 2)],
+                [position[0] + (size * height), position[1] + (-size / 2)],
+                [position[0], position[1] + (-size)],
+                [position[0] - (size * height), position[1] + (-size / 2)],
+                [position[0] - (size * height), position[1] + (size / 2)]
+                ];
+                hex.setAttribute("points", points);
+                hex.classList.add("tile");
+                this.element = hex;
+                shapes.appendChild(hex);
+                
+                let img = document.createElementNS('http://www.w3.org/2000/svg', "image");
+                img.setAttribute("x", this.posx - size*1.5/2);
+                img.setAttribute("y", this.posy - size*1.5/2);
+                img.setAttribute("width", size*1.5);
+                img.setAttribute("height", size*1.5);
+
+                shapes.appendChild(img);
+                this.#image = img;
+
+                img.addEventListener("click", ()=>MakeMove(this));
+            }
+            ChangeType(type) {
+                this.type = type;
+                if(type == 0) this.#image.setAttribute("href", "");
+                else if(type == 1) this.#image.setAttribute("href", Hex_Branco);
+                else if(type == 2) this.#image.setAttribute("href", Hex_Preto);
+            }
+        }
+
+        let cells = Array.from(Array(11), () => new Array(11));
+        let turn = 1;
+
+        function GenerateBoard() 
+        {
+            for(let i = 0; i<11; i++)
+                for(let j = 0; j<11; j++)
+                {
+                    cells[i][j] = new Cell([sposx + size*height*2*i + size*height*j,sposy - size*(3/2)*j], size)
+                }
+        }
+        function MakeMove(cell)
+        {
+            if(cell.locked) return;
+            cell.locked = true;
+            cell.ChangeType(turn);
+            if(CheckWin()) Win();
+            if(turn == 1) turn = 2;
+            else turn = 1;
+        }
+        const VisitOrder = [[1,0],[-1,0],[0,1],[0,-1],[-1,1],[1,-1]];
+        function dfs(cell, visited)
+        {
+            visited[cell[0]][cell[1]] = true;
+            if(turn == 1 && cell[1] == 10) return true;
+            if(turn == 2 && cell[0] == 10) return true;
+            for(let order of VisitOrder)
+            {
+                let next = [cell[0] + order[0], cell[1] + order[1]];
+                if(next[0] < 0 || next[1] < 0 || next[0] >10 || next[1] > 10) continue;
+                if(visited[next[0]][next[1]]) continue;
+                if(cells[next[0]][next[1]].type == turn)
+                {
+                    if(dfs(next, visited)) return true;
+                }
+            }
+            return false;
+        }
+        function CheckWin()
+        {
+            if(turn == 1)
+            {
+                for(let i = 0; i<11; i++)
+                {
+                    if(cells[i][0].type == 1)
+                    {
+                        let visited = Array.from(Array(11), () => new Array(11).fill(false));
+                        if(dfs([i,0],visited)) return true;
+                    }
+                }
+            }
+            else if(turn == 2)
+            {
+                for(let i = 0; i<11; i++)
+                {
+                    if(cells[0][i].type == 2)
+                    {
+                        let visited = Array.from(Array(11), () => new Array(11).fill(false));
+                        if(dfs([0,i],visited)) return true;
+                    }
+                }
+            }
+            return false;
+        }
+        function Win()
+        {
+            let win = document.getElementById("Winner");
+            for(let i = 0; i<11; i++)
+                for(let j = 0; j<11; j++)
+                {
+                    cells[i][j].locked = true;
+                }
+            if(turn == 1)
+            {
+                win.style = "visibility: visible; color: white;"
+                win.textContent= "White Wins";
+            }
+            else 
+            {
+                win.style = "visibility: visible; color: black;"
+                win.textContent = "Black Wins";
+            }
+        }
+        function Restart()
+        {
+            let win = document.getElementById("Winner");
+            win.style = "visibility: hidden;"
+            turn = 1;
+            for(let i = 0; i<11; i++)
+                for(let j = 0; j<11; j++)
+                {
+                    cells[i][j].locked = false;
+                    cells[i][j].ChangeType(0);
+                }
+        }
+        let rest = document.getElementById("Restart");
+        rest.addEventListener("click", Restart);
+        GenerateBoard();
+    </script>
+</body>
+
+</html>
