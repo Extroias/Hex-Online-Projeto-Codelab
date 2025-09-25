@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Hex Online</title>
     <style>
         html,
         body {
@@ -26,7 +26,22 @@
             height: 90%;
             background: rgb(235, 235, 235);
         }
-
+        #Restart{
+            width: 200px;
+        }
+        #Title{
+            border-radius: 10px;
+            border: 5px solid #000000;
+            padding-left: 10px;
+            padding-right: 10px;
+            margin-left: 20px; 
+            background-color: rgb(215, 225, 230);
+        }
+        @media (max-width: 630px) {
+            #Title{
+            display: none;
+            }
+        }
         .tile {
             stroke: black;
             fill: rgb(188, 194, 196);
@@ -44,13 +59,13 @@
 <body>
     <div
         style="display: flex; justify-content: space-between; align-items: center; width: 100%; height: 10%; background: rgb(78, 78, 78);">
-        <H1 style="margin-left: 20px;">Hex Online</H1>
+        <H1 id="Title">Hex Online</H1>
         <H1 id="Winner" style="visibility: hidden;">White Wins</H1>
         <button id="Restart" class="button">Restart</button>
     </div>
     <div id="PlayBorder">
         <div id="PlayArea">
-            <svg height="100%" width="100%" id="Shapes" viewBox="0 -768 1024 768" preserveAspectRatio="xMidYMid meet"
+            <svg height="100%" width="100%" id="Shapes" viewBox="0 -768 1150 800" preserveAspectRatio="xMidYMid meet"
                 xmlns="http://www.w3.org/2000/svg">
             </svg>
         </div>
@@ -58,9 +73,9 @@
     <script>
         let shapes = document.getElementById("Shapes");
         const height = Math.sqrt(3) / 2;
-        const size = 35;
+        const size = 40;
         const sposx = 55;
-        const sposy = -120;
+        const sposy = -58;
         const Hex_Preto = "Hex_Preto.png";
         const Hex_Branco = "Hex_Branco.png";
 
@@ -181,12 +196,12 @@
                 }
             if(turn == 1)
             {
-                win.style = "visibility: visible; color: white;"
+                win.style = "visibility: visible; color: white;padding-left:20px"
                 win.textContent= "White Wins";
             }
             else 
             {
-                win.style = "visibility: visible; color: black;"
+                win.style = "visibility: visible; color: black; padding-left:20px"
                 win.textContent = "Black Wins";
             }
         }
